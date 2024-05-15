@@ -19,19 +19,29 @@ while True:
     opcao = input(menu)
 
     if opcao == "d":
-        valor = float(input("Insira o valor que deseja depositar: "))
+        valor = float(input("Informe o valor que deseja depositar: "))
+
         if valor > 0:
             print(f"O valor de {valor} foi depositado em sua conta!")
         
         else:
             print("O valor informado para depósito é inválido, favor informar um valor maior que 0 para prosseguir com a operação.")
 
+
     elif opcao == "s":
+        valor = float(input("Informe o valor que deseja sacar: "))
+
+        saldo_negativo = valor > saldo
+
+
+
         print("Saque")
+
 
     elif opcao == "e":
         print("Extrato")
-    
+
+
     elif opcao == "q":
         break
 
