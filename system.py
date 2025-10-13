@@ -1,5 +1,13 @@
 import os
 import textwrap
+import functools
+import inspect
+
+def finalizador(func):
+    """Decorador marcador; por enquanto não altera comportamento da função.
+    Mantém a compatibilidade com chamadas existentes que usam @finalizador.
+    """
+    return func
 
 def menu():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -19,6 +27,7 @@ def menu():
     => """
     return input(textwrap.dedent(menu))
 
+@finalizador
 def mensagem_final():
     print("=" * 50)
     input("Pressione ENTER para continuar...")
@@ -111,22 +120,112 @@ def validar_cpf(cpf: str) -> bool:
 
     return True
 
-def filtrar_usuario(cpf, usuarios):
-    ''' Filtra um usuário pelo CPF informado. 
-    Retorna o usuário se encontrado, caso contrário retorna None. 
-    
-    Inputs:
-    cpf: str - CPF do usuário a ser filtrado.
-    usuarios: list - Lista de usuários cadastrados.
-    Outputs:
-    dict or None - Usuário encontrado ou None se não encontrado.
+# Decorador para validar CPF passado como argumento
+def require_valid_cpf(arg_name: str = "cpf"):
+    ''' Decorador que valida o CPF passado como argumento para a função decorada.
+        Inputs:
+        arg_name: str - Nome do argumento que contém o CPF.
+        Outputs:
+        bool - True se o CPF for válido, False caso contrário.
     '''
-    # Valida o CPF
-    if not validar_cpf(cpf):
-        print("CPF inválido!")
-        return None
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            cpf_val = kwargs.get(arg_name)
+            if cpf_val is None:
+                try:
+                    sig = inspect.signature(func)
+                    bound = sig.bind_partial(*args, **kwargs)
+                    cpf_val = bound.arguments.get(arg_name)
+                except Exception:
+                    cpf_val = None
 
-    # Remove non-digit characters from CPF    
+            if not cpf_val:
+                print("CPF não fornecido para validação.")
+                return None
+
+            if not validar_cpf(cpf_val):
+                print("CPF inválido! Operação cancelada.")
+                return None
+
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+def resolve_user_account(prompt_account: bool = True):
+    ''' Decorador que solicita CPF, valida, filtra usuário e conta,
+        e injeta conta_obj, usuario_obj e cpf na função decorada.
+        
+        Inputs:
+        prompt_account: bool - Se True, solicita o número da conta se houver múltiplas contas para o usuário.
+        Outputs:
+        conta_obj: dict - Conta selecionada do usuário.
+        usuario_obj: dict - Usuário correspondente ao CPF.
+        cpf: str - CPF informado.
+        '''
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            usuarios = kwargs.get('usuarios')
+            contas = kwargs.get('contas')
+            try:
+                sig = inspect.signature(func)
+                bound = sig.bind_partial(*args, **kwargs)
+                if usuarios is None and 'usuarios' in bound.arguments:
+                    usuarios = bound.arguments.get('usuarios')
+                if contas is None and 'contas' in bound.arguments:
+                    contas = bound.arguments.get('contas')
+            except Exception:
+                pass
+
+            cpf = input("Informe o CPF (somente números): ")
+            if not validar_cpf(cpf):
+                print("CPF inválido! Operação cancelada.")
+                mensagem_final()
+                return None
+
+            usuario = filtrar_usuario(cpf, usuarios or [])
+            if not usuario:
+                print("Usuário não encontrado.")
+                mensagem_final()
+                return None
+
+            cpf_digits = ''.join(filter(str.isdigit, cpf))
+            contas_usuario = [c for c in (contas or []) if ''.join(filter(str.isdigit, c['usuario'].get('cpf',''))) == cpf_digits]
+            if not contas_usuario:
+                print("Nenhuma conta encontrada para este usuário.")
+                mensagem_final()
+                return None
+
+            if len(contas_usuario) == 1:
+                conta_obj = contas_usuario[0]
+            else:
+                print("Contas encontradas para o usuário:")
+                for conta in contas_usuario:
+                    print(f" - Conta: {conta['numero_conta']} | Agência: {conta['agencia']}")
+                numero_conta = input("Informe o número da conta: ")
+                matching = [c for c in contas_usuario if str(c['numero_conta']) == str(numero_conta)]
+                if not matching:
+                    print("Conta inválida para este usuário.")
+                    mensagem_final()
+                    return None
+                conta_obj = matching[0]
+
+            kwargs.update({
+                'conta_obj': conta_obj,
+                'usuario_obj': usuario,
+                'cpf': cpf,
+            })
+
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
+@require_valid_cpf('cpf')
+@require_valid_cpf('cpf')
+def filtrar_usuario(cpf, usuarios):
+    ''' Filtra um usuário pelo CPF informado. Retorna o usuário ou None. '''
     cpf_digits = ''.join(filter(str.isdigit, cpf))
     usuarios_filtrados = [
         usuario for usuario in usuarios
@@ -141,7 +240,14 @@ def criar_conta(agencia, numero_conta, usuarios):
     if usuario:
         print(f"=== Conta {numero_conta} criada com sucesso! ===")
         mensagem_final()
-        return {"agencia": agencia, "numero_conta": numero_conta, "usuario": usuario}
+        # inicializa saldo e extrato por conta
+        return {
+            "agencia": agencia,
+            "numero_conta": numero_conta,
+            "usuario": usuario,
+            "saldo": 0.0,
+            "extrato": "",
+        }
     
     print("Usuário não encontrado, fluxo de criação de conta encerrado!")
     mensagem_final()
@@ -164,42 +270,10 @@ def filtrar_conta(numero_conta, contas):
     contas_filtradas = [conta for conta in contas if conta["numero_conta"] == numero_conta]
     return contas_filtradas[0] if contas_filtradas else None
 
-def depositar(saldo, extrato, usuarios, contas):
-    cpf = input("Informe o CPF do usuário para depósito (somente números): ")
-    
-    # Validar usuario
-    usuario = filtrar_usuario(cpf, usuarios)
-    if not usuario:
-        print("Operação falhou! CPF não corresponde a um usuário cadastrado.")
-        mensagem_final()
-        return saldo, extrato
-
-    # Normaliza o CPF e busca a conta
-    cpf_digits = ''.join(filter(str.isdigit, cpf))
-    contas_usuario = [
-        conta for conta in contas
-        if ''.join(filter(str.isdigit, conta['usuario'].get("cpf", ""))) == cpf_digits
-        ]
-    
-    if not contas_usuario:
-        print("Operação falhou! Nenhuma conta encontrada para o CPF informado.")
-        mensagem_final()
-        return saldo, extrato
-
-    # Se houver múltiplas contas, solicitar o número da conta
-    if len(contas_usuario) == 1:
-        numero_conta = contas_usuario[0]['numero_conta']
-    else:
-        print("Contas encontradas para o CPF informado:")
-        for conta in contas_usuario:
-            print(f" - Conta: {conta['numero_conta']} (Agência: {conta['agencia']})")
-        numero_conta = input("Informe o número da conta para depósito: ")
-        # Validar se o número da conta é válido
-        if not any(str(conta['numero_conta']) == str(numero_conta) for conta in contas_usuario):
-            print("Operação falhou! Conta não encontrada para o CPF informado.")
-            mensagem_final()
-            return saldo, extrato
-    
+@resolve_user_account()
+def depositar(saldo, extrato, usuarios, contas, *, conta_obj=None, usuario_obj=None, cpf=None):
+    """Depósito interativo que recebe `conta_obj` injetada pelo decorator."""
+    numero_conta = conta_obj['numero_conta']
     valor_str = input("Informe o valor do depósito: ")
 
     try:
@@ -214,18 +288,24 @@ def depositar(saldo, extrato, usuarios, contas):
         mensagem_final()
         return saldo, extrato
 
-    saldo += valor_deposito
-    extrato += f"Depósito:\tR$ {valor_deposito:.2f} - CPF: {cpf} - Conta: {numero_conta}\n"
+    # Atualiza apenas a conta selecionada
+    conta_obj['saldo'] = conta_obj.get('saldo', 0.0) + valor_deposito
+    conta_obj['extrato'] = conta_obj.get('extrato', '') + f"Depósito:\tR$ {valor_deposito:.2f} - CPF: {cpf} - Conta: {numero_conta}\n"
+
+    # Atualiza valores retornados para compatibilidade com main
+    saldo = conta_obj['saldo']
+    extrato = conta_obj['extrato']
 
     print("=============== DEPÓSITO ===============")
     print(f"Depósito de R$ {valor_deposito:.2f} realizado com sucesso para a conta {numero_conta}!")
-    print(f"Novo saldo: R$ {saldo:.2f}")
+    print(f"Saldo da conta {numero_conta}: R$ {conta_obj['saldo']:.2f}")
     print("=======================================")
     mensagem_final()
 
     return saldo, extrato
 
-def sacar(*, saldo, extrato, limite, numero_saques, limite_saques, usuarios=None, contas=None):
+@resolve_user_account()
+def sacar(*, saldo, extrato, limite, numero_saques, limite_saques, usuarios=None, contas=None, conta_obj=None, usuario_obj=None, cpf=None):
     ''' Realiza um saque na conta, atualizando o saldo e o extrato.
     Retorna o saldo e o extrato atualizados.
 
@@ -240,47 +320,8 @@ def sacar(*, saldo, extrato, limite, numero_saques, limite_saques, usuarios=None
     tuple - Saldo e extrato atualizados.
     '''
 
-    cpf = input("Informe o CPF do usuário para saque (somente números): ")
-
-    # Valida se o CPF é válido
-    if not validar_cpf(cpf):
-        print("CPF inválido! Favor informar um CPF válido para prosseguir com o saque.")
-        mensagem_final()
-        return saldo, extrato, numero_saques
-
-    # Valida o usuário
-    usuario = filtrar_usuario(cpf, usuarios) if usuarios is not None else None
-    if not usuario:
-        print("Operação falhou! CPF não corresponde a um usuário cadastrado.")
-        mensagem_final()
-        return saldo, extrato, numero_saques
-
-    # Busca contas do usuário
-    cpf_digits = ''.join(filter(str.isdigit, cpf))
-    contas_usuario = [
-        conta for conta in (contas or [])
-        if ''.join(filter(str.isdigit, conta['usuario'].get("cpf", ""))) == cpf_digits
-        ]
-    
-    if not contas_usuario:
-        print("Operação falhou! Nenhuma conta encontrada para o CPF informado.")
-        mensagem_final()
-        return saldo, extrato, numero_saques
-
-    # Se houver múltiplas contas, solicitar o número da conta
-    if len(contas_usuario) == 1:
-        numero_conta = contas_usuario[0]['numero_conta']
-    else:
-        print("Contas encontradas para o CPF informado:")
-        for conta in contas_usuario:
-            print(f" - Conta: {conta['numero_conta']} (Agência: {conta['agencia']})")
-        numero_conta = input("Informe o número da conta para saque: ")
-    
-        # Validar se o número da conta é válido
-        if not any(str(conta['numero_conta']) == str(numero_conta) for conta in contas_usuario):
-            print("Operação falhou! Conta não encontrada para o CPF informado.")
-            mensagem_final()
-            return saldo, extrato, numero_saques
+    # conta_obj, usuario_obj e cpf são injetados pelo decorator
+    numero_conta = conta_obj['numero_conta']
 
     valor_str = input("Informe o valor do saque: ")
     try:
@@ -294,10 +335,13 @@ def sacar(*, saldo, extrato, limite, numero_saques, limite_saques, usuarios=None
     print(f"Saque de R$ {valor:.2f} solicitado para a conta {numero_conta} - CPF: {cpf}")
     print("=" * 50)
 
-    if valor > saldo:
+    # utiliza o saldo da conta selecionada
+    conta_saldo = conta_obj.get('saldo', 0.0)
+
+    if valor > conta_saldo:
         print("Operação falhou! Você não tem saldo suficiente.")
         mensagem_final()
-    
+
     elif valor > limite:
         print("Operação falhou! O valor do saque excede o limite.")
         mensagem_final()
@@ -307,22 +351,28 @@ def sacar(*, saldo, extrato, limite, numero_saques, limite_saques, usuarios=None
         mensagem_final()
 
     elif valor > 0:
-        saldo -= valor
-        extrato += f"Saque:\tR$ {valor:.2f}\n"
+        conta_obj['saldo'] = conta_saldo - valor
+        conta_obj['extrato'] = conta_obj.get('extrato', '') + f"Saque:\tR$ {valor:.2f}\n"
         numero_saques += 1
         print("Saque realizado com sucesso!")
-        print(f"Novo saldo: R$ {saldo:.2f}")
+        print(f"Novo saldo: R$ {conta_obj['saldo']:.2f}")
         mensagem_final()
 
     else:
         print("Operação falhou! O valor informado é inválido.")
         mensagem_final()
-    
+
+    # retorna o saldo/extrato da conta selecionada para compatibilidade com main
+    saldo = conta_obj.get('saldo', 0.0)
+    extrato = conta_obj.get('extrato', '')
     return saldo, extrato, numero_saques
 
-def exibir_extrato(saldo, /, *, extrato):
+@resolve_user_account()
+def exibir_extrato(*, usuarios=None, contas=None, conta_obj=None, usuario_obj=None, cpf=None):
     os.system('cls' if os.name == 'nt' else 'clear')
     print("=" * 23 + "EXTRATO" + "=" * 23)
+    extrato = conta_obj.get('extrato', '')
+    saldo = conta_obj.get('saldo', 0.0)
     print("Não foram realizadas movimentações." if not extrato else extrato)
     print(f"\nSaldo:\tR$ {saldo:.2f}")
     print("=" * 50)
@@ -342,10 +392,14 @@ def main():
 
         opcao = menu()
         if opcao == "d":
-            saldo, extrato = depositar(saldo, extrato, usuarios, contas)
+            res = depositar(saldo, extrato, usuarios, contas)
+            if res is None:
+                # operação cancelada ou falhou; mantém estado
+                continue
+            saldo, extrato = res
 
         elif opcao == "s":
-            saldo, extrato, numero_saques = sacar(
+            res = sacar(
                 saldo=saldo,
                 extrato=extrato,
                 limite=limite,
@@ -354,9 +408,13 @@ def main():
                 usuarios=usuarios,
                 contas=contas,
             )
+            if res is None:
+                continue
+            saldo, extrato, numero_saques = res
 
         elif opcao == "e":
-            exibir_extrato(saldo, extrato=extrato)
+            # exibir_extrato agora pede CPF/conta via decorator
+            exibir_extrato(usuarios=usuarios, contas=contas)
 
         elif opcao == "nu":
             criar_usuario(usuarios)
