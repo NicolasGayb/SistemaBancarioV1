@@ -20,9 +20,9 @@ def menu():
     return input(textwrap.dedent(menu))
 
 def mensagem_final():
-    print("=" * 100)
-    input("Operação concluída com sucesso! Tecle ENTER para continuar...")
-    print("=" * 100)
+    print("=" * 50)
+    input("Pressione ENTER para continuar...")
+    print("=" * 50)
 
 def criar_usuario(usuarios):
     cpf = input("Informe o CPF (somente números): ")
@@ -36,6 +36,7 @@ def criar_usuario(usuarios):
 
     if usuario:
         print("Já existe usuário com esse CPF!")
+        mensagem_final()
         return
 
     nome = input("Informe o nome: ").title()
@@ -70,7 +71,7 @@ def listar_usuarios(usuarios):
             CPF:\t{usuario['cpf']}
             Data de Nascimento:\t{usuario['data_nascimento']}
         """
-        print("=" * 100)
+        print("=" * 50)
         print(textwrap.dedent(linha))
 
 def validar_cpf(cpf: str) -> bool:
@@ -156,7 +157,7 @@ def listar_contas(contas):
             N° da conta:\t{conta['numero_conta']}
             Titular:\t{conta['usuario']['nome']}
         """
-        print("=" * 100)
+        print("=" * 50)
         print(textwrap.dedent(linha))
 
 def filtrar_conta(numero_conta, contas):
@@ -170,6 +171,7 @@ def depositar(saldo, extrato, usuarios, contas):
     usuario = filtrar_usuario(cpf, usuarios)
     if not usuario:
         print("Operação falhou! CPF não corresponde a um usuário cadastrado.")
+        mensagem_final()
         return saldo, extrato
 
     # Normaliza o CPF e busca a conta
@@ -181,10 +183,11 @@ def depositar(saldo, extrato, usuarios, contas):
     
     if not contas_usuario:
         print("Operação falhou! Nenhuma conta encontrada para o CPF informado.")
+        mensagem_final()
         return saldo, extrato
 
     # Se houver múltiplas contas, solicitar o número da conta
-    if len(contas_usuario) > 1:
+    if len(contas_usuario) == 1:
         numero_conta = contas_usuario[0]['numero_conta']
     else:
         print("Contas encontradas para o CPF informado:")
@@ -194,6 +197,7 @@ def depositar(saldo, extrato, usuarios, contas):
         # Validar se o número da conta é válido
         if not any(str(conta['numero_conta']) == str(numero_conta) for conta in contas_usuario):
             print("Operação falhou! Conta não encontrada para o CPF informado.")
+            mensagem_final()
             return saldo, extrato
     
     valor_str = input("Informe o valor do depósito: ")
@@ -202,10 +206,12 @@ def depositar(saldo, extrato, usuarios, contas):
         valor_deposito = float(valor_str.replace(',', '.'))
     except ValueError:
         print("Operação falhou! O valor informado é inválido.")
+        mensagem_final()
         return saldo, extrato
 
     if valor_deposito <= 0:
         print("Operação falhou! O valor informado é inválido.")
+        mensagem_final()
         return saldo, extrato
 
     saldo += valor_deposito
@@ -215,56 +221,112 @@ def depositar(saldo, extrato, usuarios, contas):
     print(f"Depósito de R$ {valor_deposito:.2f} realizado com sucesso para a conta {numero_conta}!")
     print(f"Novo saldo: R$ {saldo:.2f}")
     print("=======================================")
+    mensagem_final()
 
     return saldo, extrato
 
-def sacar(*, saldo, valor, extrato, limite, numero_saques, limite_saques):
+def sacar(*, saldo, extrato, limite, numero_saques, limite_saques, usuarios=None, contas=None):
+    ''' Realiza um saque na conta, atualizando o saldo e o extrato.
+    Retorna o saldo e o extrato atualizados.
+
+    Inputs:
+    saldo: float - Saldo atual da conta.
+    valor: float - Valor do saque.
+    extrato: str - Extrato atual da conta.
+    limite: float - Limite máximo para cada saque.
+    numero_saques: int - Número de saques realizados no dia.
+    limite_saques: int - Limite máximo de saques permitidos por dia.
+    Outputs:
+    tuple - Saldo e extrato atualizados.
+    '''
+
     cpf = input("Informe o CPF do usuário para saque (somente números): ")
-    numero_conta = input("Informe o número da conta para saque: ")
 
-    # Validação de CPF e conta
+    # Valida se o CPF é válido
+    if not validar_cpf(cpf):
+        print("CPF inválido! Favor informar um CPF válido para prosseguir com o saque.")
+        mensagem_final()
+        return saldo, extrato, numero_saques
+
+    # Valida o usuário
     usuario = filtrar_usuario(cpf, usuarios) if usuarios is not None else None
-    conta = filtrar_conta(int(numero_conta), contas) if contas is not None and numero_conta.isdigit() else None
-
     if not usuario:
         print("Operação falhou! CPF não corresponde a um usuário cadastrado.")
-        return saldo, extrato
+        mensagem_final()
+        return saldo, extrato, numero_saques
 
-    if not conta:
-        print("Operação falhou! Conta não encontrada.")
-        return saldo, extrato
+    # Busca contas do usuário
+    cpf_digits = ''.join(filter(str.isdigit, cpf))
+    contas_usuario = [
+        conta for conta in (contas or [])
+        if ''.join(filter(str.isdigit, conta['usuario'].get("cpf", ""))) == cpf_digits
+        ]
+    
+    if not contas_usuario:
+        print("Operação falhou! Nenhuma conta encontrada para o CPF informado.")
+        mensagem_final()
+        return saldo, extrato, numero_saques
 
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print("=============== SAQUE ===============")
+    # Se houver múltiplas contas, solicitar o número da conta
+    if len(contas_usuario) == 1:
+        numero_conta = contas_usuario[0]['numero_conta']
+    else:
+        print("Contas encontradas para o CPF informado:")
+        for conta in contas_usuario:
+            print(f" - Conta: {conta['numero_conta']} (Agência: {conta['agencia']})")
+        numero_conta = input("Informe o número da conta para saque: ")
+    
+        # Validar se o número da conta é válido
+        if not any(str(conta['numero_conta']) == str(numero_conta) for conta in contas_usuario):
+            print("Operação falhou! Conta não encontrada para o CPF informado.")
+            mensagem_final()
+            return saldo, extrato, numero_saques
+
+    valor_str = input("Informe o valor do saque: ")
+    try:
+        valor = float(valor_str.replace(',', '.'))
+    except ValueError:
+        print("Operação falhou! O valor informado é inválido.")
+        mensagem_final()
+        return saldo, extrato, numero_saques
+
+    print("=" * 23 + "SAQUE" + "=" * 23)
     print(f"Saque de R$ {valor:.2f} solicitado para a conta {numero_conta} - CPF: {cpf}")
-    print("=======================================")
+    print("=" * 50)
 
     if valor > saldo:
         print("Operação falhou! Você não tem saldo suficiente.")
+        mensagem_final()
     
     elif valor > limite:
         print("Operação falhou! O valor do saque excede o limite.")
+        mensagem_final()
 
     elif numero_saques >= limite_saques:
         print("Operação falhou! Número máximo de saques diários excedido.")
+        mensagem_final()
 
     elif valor > 0:
         saldo -= valor
         extrato += f"Saque:\tR$ {valor:.2f}\n"
         numero_saques += 1
         print("Saque realizado com sucesso!")
+        print(f"Novo saldo: R$ {saldo:.2f}")
+        mensagem_final()
 
     else:
         print("Operação falhou! O valor informado é inválido.")
+        mensagem_final()
     
-    return saldo, extrato
+    return saldo, extrato, numero_saques
 
 def exibir_extrato(saldo, /, *, extrato):
     os.system('cls' if os.name == 'nt' else 'clear')
-    print("=============== EXTRATO ===============")
+    print("=" * 23 + "EXTRATO" + "=" * 23)
     print("Não foram realizadas movimentações." if not extrato else extrato)
     print(f"\nSaldo:\tR$ {saldo:.2f}")
-    print("=======================================")
+    print("=" * 50)
+    mensagem_final()
 
 def main():
     LIMITE_SAQUES = 3
@@ -283,17 +345,14 @@ def main():
             saldo, extrato = depositar(saldo, extrato, usuarios, contas)
 
         elif opcao == "s":
-            valor = float(input("Informe o valor do saque: "))
-            
-            saldo, extrato = sacar(
+            saldo, extrato, numero_saques = sacar(
                 saldo=saldo,
-                valor=valor,
                 extrato=extrato,
                 limite=limite,
                 numero_saques=numero_saques,
                 limite_saques=LIMITE_SAQUES,
                 usuarios=usuarios,
-                contas=contas
+                contas=contas,
             )
 
         elif opcao == "e":
@@ -316,7 +375,7 @@ def main():
                     CPF:\t{usuario['cpf']}
                     Data de Nascimento:\t{usuario['data_nascimento']}
                 """
-                print("=" * 100)
+                print("=" * 50)
                 print(textwrap.dedent(linha))
             else:
                 print("Usuário não encontrado.")
@@ -341,10 +400,10 @@ def main():
             if conta:
                 linha = f"""\
                     Agência:\t{conta['agencia']}
-                    C/C:\t{conta['numero_conta']}
+                    N° da conta:\t{conta['numero_conta']}
                     Titular:\t{conta['usuario']['nome']}
                 """
-                print("=" * 100)
+                print("=" * 50)
                 print(textwrap.dedent(linha))
             else:
                 print("Conta não encontrada.")
