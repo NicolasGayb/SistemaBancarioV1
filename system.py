@@ -4,12 +4,17 @@ import functools
 import inspect
 
 def finalizador(func):
-    """Decorador marcador; por enquanto não altera comportamento da função.
+    '''Decorador marcador; por enquanto não altera comportamento da função.
     Mantém a compatibilidade com chamadas existentes que usam @finalizador.
-    """
+    '''
     return func
 
 def menu():
+    ''' Exibe o menu e retorna a opção escolhida pelo usuário.
+
+        Outputs:
+        str - Opção escolhida pelo usuário.    
+     '''
     os.system('cls' if os.name == 'nt' else 'clear')
     menu = """
     ================= MENU ================
@@ -29,11 +34,18 @@ def menu():
 
 @finalizador
 def mensagem_final():
+    ''' Mensagem final padrão após operações. '''
     print("=" * 50)
     input("Pressione ENTER para continuar...")
     print("=" * 50)
 
 def criar_usuario(usuarios):
+    ''' Cria um novo usuário interativamente e o adiciona à lista de usuários.
+        Verifica se o CPF é válido e se já existe na base de usuários.
+
+        Inputs:
+        usuarios: list - Lista de usuários existentes.
+    '''
     cpf = input("Informe o CPF (somente números): ")
 
     # Valida o CPF
@@ -70,6 +82,11 @@ def criar_usuario(usuarios):
     return mensagem_final()
 
 def listar_usuarios(usuarios):
+    ''' Lista todos os usuários cadastrados. 
+    
+        Inputs:
+        usuarios: list - Lista de usuários existentes.
+    '''
     if not usuarios:
         print("Nenhum usuário cadastrado.")
         return
@@ -120,7 +137,6 @@ def validar_cpf(cpf: str) -> bool:
 
     return True
 
-# Decorador para validar CPF passado como argumento
 def require_valid_cpf(arg_name: str = "cpf"):
     ''' Decorador que valida o CPF passado como argumento para a função decorada.
         Inputs:
@@ -221,11 +237,16 @@ def resolve_user_account(prompt_account: bool = True):
         return wrapper
     return decorator
 
-
 @require_valid_cpf('cpf')
 @require_valid_cpf('cpf')
 def filtrar_usuario(cpf, usuarios):
-    ''' Filtra um usuário pelo CPF informado. Retorna o usuário ou None. '''
+    ''' Filtra um usuário pelo CPF informado. Retorna o usuário ou None. 
+    
+        Inputs:
+        cpf: str - CPF do usuário a ser filtrado.
+        Outputs:
+        dict - Usuário correspondente ao CPF ou None.
+    '''
     cpf_digits = ''.join(filter(str.isdigit, cpf))
     usuarios_filtrados = [
         usuario for usuario in usuarios
@@ -234,6 +255,15 @@ def filtrar_usuario(cpf, usuarios):
     return usuarios_filtrados[0] if usuarios_filtrados else None
 
 def criar_conta(agencia, numero_conta, usuarios):
+    ''' Cria uma nova conta associada a um usuário existente.
+       
+        Inputs:
+        agencia: str - Número da agência.
+        numero_conta: int - Número da conta.
+        usuarios: list - Lista de usuários existentes.
+        Outputs:
+        dict - Conta criada ou None se falhar.
+    '''
     cpf = input("Informe o CPF do usuário: ")
     usuario = filtrar_usuario(cpf, usuarios)
 
@@ -253,6 +283,11 @@ def criar_conta(agencia, numero_conta, usuarios):
     mensagem_final()
 
 def listar_contas(contas):
+    ''' Lista todas as contas cadastradas. 
+    
+        Inputs:
+        contas: list - Lista de contas existentes.
+    '''
     if not contas:
         print("Nenhuma conta cadastrada.")
         return
@@ -267,12 +302,25 @@ def listar_contas(contas):
         print(textwrap.dedent(linha))
 
 def filtrar_conta(numero_conta, contas):
+    ''' Filtra uma conta pelo número da conta. Retorna a conta ou None.
+    
+        Inputs:
+        numero_conta: int - Número da conta a ser filtrada.
+        Outputs:
+        dict - Conta correspondente ao número ou None.
+    '''
     contas_filtradas = [conta for conta in contas if conta["numero_conta"] == numero_conta]
     return contas_filtradas[0] if contas_filtradas else None
 
 @resolve_user_account()
 def depositar(saldo, extrato, usuarios, contas, *, conta_obj=None, usuario_obj=None, cpf=None):
-    """Depósito interativo que recebe `conta_obj` injetada pelo decorator."""
+    '''Depósito interativo que recebe `conta_obj` injetada pelo decorator.
+        
+        Inputs:
+        saldo: float - Saldo atual da conta.
+        Outputs:
+        tuple - Saldo e extrato atualizados.
+    '''
     numero_conta = conta_obj['numero_conta']
     valor_str = input("Informe o valor do depósito: ")
 
@@ -369,6 +417,11 @@ def sacar(*, saldo, extrato, limite, numero_saques, limite_saques, usuarios=None
 
 @resolve_user_account()
 def exibir_extrato(*, usuarios=None, contas=None, conta_obj=None, usuario_obj=None, cpf=None):
+    ''' Exibe o extrato da conta selecionada.
+        Inputs:
+        usuarios: list - Lista de usuários existentes.
+        contas: list - Lista de contas existentes.
+    '''
     os.system('cls' if os.name == 'nt' else 'clear')
     print("=" * 23 + "EXTRATO" + "=" * 23)
     extrato = conta_obj.get('extrato', '')
@@ -379,6 +432,7 @@ def exibir_extrato(*, usuarios=None, contas=None, conta_obj=None, usuario_obj=No
     mensagem_final()
 
 def main():
+    ''' Função principal que executa o sistema bancário.'''
     LIMITE_SAQUES = 3
     AGENCIA = "0001"
     limite = 500
