@@ -1,0 +1,18 @@
+[2025-10-15 09:08:44] Função 'criar_usuario' chamada com args: ([{'nome': 'Nicolas Leal', 'data_nascimento': '22-11-2002', 'cpf': '10921626908'}],), kwargs: {}. Retornou None
+[2025-10-15 09:13:52] Função 'depositar' chamada com args: (0, '', [], []), kwargs: {}. Retornou None
+[2025-10-15 09:14:05] Função 'filtrar_usuario' chamada com args: ('10921626908', []), kwargs: {}. Retornou None
+[2025-10-15 09:14:20] Função 'criar_usuario' chamada com args: ([{'nome': 'Nicolas Leal', 'data_nascimento': '22-11-2002', 'cpf': '10921626908'}],), kwargs: {}. Retornou None
+[2025-10-15 09:14:28] Função 'filtrar_usuario' chamada com args: ('10921626908', [{'nome': 'Nicolas Leal', 'data_nascimento': '22-11-2002', 'cpf': '10921626908'}]), kwargs: {}. Retornou {'nome': 'Nicolas Leal', 'data_nascimento': '22-11-2002', 'cpf': '10921626908'}
+[2025-10-15 09:14:36] Função 'criar_conta' chamada com args: ('0001', 1, [{'nome': 'Nicolas Leal', 'data_nascimento': '22-11-2002', 'cpf': '10921626908'}]), kwargs: {}. Retornou {'agencia': '0001', 'numero_conta': 1, 'usuario': {'nome': 'Nicolas Leal', 'data_nascimento': '22-11-2002', 'cpf': '10921626908'}, 'saldo': 0.0, 'extrato': ''}
+[2025-10-15 09:14:42] Função 'filtrar_usuario' chamada com args: ('10921626908', [{'nome': 'Nicolas Leal', 'data_nascimento': '22-11-2002', 'cpf': '10921626908'}]), kwargs: {}. Retornou {'nome': 'Nicolas Leal', 'data_nascimento': '22-11-2002', 'cpf': '10921626908'}
+[2025-10-15 09:14:56] Função 'depositar' chamada com args: (0, '', [{'nome': 'Nicolas Leal', 'data_nascimento': '22-11-2002', 'cpf': '10921626908'}], [{'agencia': '0001', 'numero_conta': 1, 'usuario': {'nome': 'Nicolas Leal', 'data_nascimento': '22-11-2002', 'cpf': '10921626908'}, 'saldo': 1000.0, 'extrato': 'Depósito:\tR$ 1000.00 - CPF: 10921626908 - Conta: 1\n'}]), kwargs: {}. Retornou (1000.0, 'Depósito:\tR$ 1000.00 - CPF: 10921626908 - Conta: 1\n')
+[2025-10-15 09:15:18] Função 'listar_usuarios' chamada com args: ([{'nome': 'Nicolas Leal', 'data_nascimento': '22-11-2002', 'cpf': '10921626908'}],), kwargs: {}. Retornou None
+[2025-10-15 09:15:23] Função 'listar_usuarios' chamada com args: ([{'nome': 'Nicolas Leal', 'data_nascimento': '22-11-2002', 'cpf': '10921626908'}],), kwargs: {}. Retornou None
+[2025-10-15 09:15:35] Função 'filtrar_usuario' chamada com args: ('10921626908', [{'nome': 'Nicolas Leal', 'data_nascimento': '22-11-2002', 'cpf': '10921626908'}]), kwargs: {}. Retornou {'nome': 'Nicolas Leal', 'data_nascimento': '22-11-2002', 'cpf': '10921626908'}
+[2025-10-15 15:27:25] criar_usuario called with args=(<__main__.SistemaBancario object at 0x000001D031DFEF90>,), kwargs={} -> None
+[2025-10-15 15:27:30] criar_conta called with args=(<__main__.SistemaBancario object at 0x000001D031DFEF90>,), kwargs={} -> None
+[2025-10-15 15:27:40] depositar called with args=(<__main__.SistemaBancario object at 0x000001D031DFEF90>,), kwargs={} -> None
+[2025-10-15 15:27:50] sacar called with args=(<__main__.SistemaBancario object at 0x000001D031DFEF90>,), kwargs={} -> None
+[2025-10-15 15:28:06] sacar called with args=(<__main__.SistemaBancario object at 0x000001D031DFEF90>,), kwargs={} -> None
+[2025-10-15 15:28:25] sacar called with args=(<__main__.SistemaBancario object at 0x000001D031DFEF90>,), kwargs={} -> None
+[2025-10-15 15:29:17] exibir_extrato called with args=(<__main__.SistemaBancario object at 0x000001D031DFEF90>,), kwargs={} -> None
