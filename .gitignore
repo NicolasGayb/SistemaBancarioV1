@@ -1,0 +1,68 @@
+# Arquivos de configuração e segredos
+.env
+.env.*      # .env.local, .env.production, etc.
+*.local.env
+
+# Sistema / OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs e caches
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.cache
+.cache/
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+pip-log.txt
+venv/
+env/
+ENV/
+.venv/
+
+
+# Databases e arquivos temporários
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.lock
+tmp/
+temp/
+
+# Keys, certs e credenciais
+*.pem
+*.key
+*.crt
+secrets.json
+credentials.json
+
+# Outros arquivos de IDE/editor
+*.swp
+*~ 
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Ignore artifacts gerados por builds locais
+coverage/
+reports/
+dist/
+build/
+
+# Arquivos de pacote temporários
+*.tgz
+*.bak
+*.old
+*.orig

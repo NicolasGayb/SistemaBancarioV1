@@ -16,3 +16,76 @@
 [2025-10-15 15:28:06] sacar called with args=(<__main__.SistemaBancario object at 0x000001D031DFEF90>,), kwargs={} -> None
 [2025-10-15 15:28:25] sacar called with args=(<__main__.SistemaBancario object at 0x000001D031DFEF90>,), kwargs={} -> None
 [2025-10-15 15:29:17] exibir_extrato called with args=(<__main__.SistemaBancario object at 0x000001D031DFEF90>,), kwargs={} -> None
+2025-10-23 11:48:42 [WARNING] (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Projetos\SistemaBancarioV1\venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-10-23 11:48:51 [WARNING] (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Projetos\SistemaBancarioV1\venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-10-23 11:48:58 [WARNING] (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Projetos\SistemaBancarioV1\venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-10-23 11:54:47 [WARNING] (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Projetos\SistemaBancarioV1\venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-10-23 11:57:19 [WARNING] (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Projetos\SistemaBancarioV1\venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-10-23 13:52:16 [WARNING] (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Projetos\SistemaBancarioV1\venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-10-23 13:54:39 [WARNING] (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Projetos\SistemaBancarioV1\venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-10-23 13:55:39 [WARNING] (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Projetos\SistemaBancarioV1\venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-10-23 13:55:41 [WARNING] (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Projetos\SistemaBancarioV1\venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-10-23 13:56:58 [WARNING] (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Projetos\SistemaBancarioV1\venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-10-23 13:58:05 [WARNING] (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Projetos\SistemaBancarioV1\venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-10-23 14:06:17 [WARNING] (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Projetos\SistemaBancarioV1\venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-10-23 14:07:55 [INFO] Conta criada com sucesso: user_id=1, account_id=1
